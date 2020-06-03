@@ -9,7 +9,15 @@
 - Execute: npm install OU yarn - uma vez em cada pasta
 - Execute: npm dev OU yarn dev - uma vez para cada aplicação
 
-# Tecnologias utilizadas
+# Rotas
+
+-
+
+# Tecnologias utilizadas - backend
 
 - Typescript
 - Express
+
+# Tecnologias utilizadas - frontend
+
+- ...
