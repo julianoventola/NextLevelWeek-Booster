@@ -24,6 +24,32 @@ class PointController {
     return response.json({ point, items });
   }
 
+  // Exibe todos os pontos de coleta filtrados
+  async index(request: Request, response: Response) {
+    // Campos de filtro: Cidade - UF - Items (TODOS campos de filtro devem existir)
+    const { city, uf, items } = request.query;
+
+    const parsedItems = String(items)
+      .split(",")
+      .map((item) => Number(item.trim()));
+
+    // Procura no BD por todos pontos de coleta
+    const points = await knex("points")
+      .join("point_items", "points.id", "=", "point_items.point_id")
+      .whereIn("point_items.item_id", parsedItems)
+      .where("city", String(city))
+      .where("uf", String(uf))
+      .distinct()
+      .select("points.*");
+
+    // Valida se os pontos existem para ser retornado
+    if (!points) {
+      return response.status(400).json({ message: "Points not found." });
+    }
+
+    return response.json({ points });
+  }
+
   // Cria um ponto de coleta
   async create(request: Request, response: Response) {
     // Recupera os valores enviador no body
@@ -68,6 +94,9 @@ class PointController {
 
     // Salva a relação Ponto x Item
     await trx("point_items").insert(pointItems);
+
+    // Insere os dados na base de dados via transação
+    await trx.commit();
 
     return response.json({
       id: point_id,

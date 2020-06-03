@@ -11,5 +11,6 @@ routes.get("/items", ItemsController.index);
 //Rotas de Pontos de coleta
 routes.post("/points", PointsController.create);
 routes.get("/points/:id", PointsController.show);
+routes.get("/points", PointsController.index);
 
 export default routes;
