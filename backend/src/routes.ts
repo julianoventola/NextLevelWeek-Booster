@@ -5,10 +5,11 @@ import ItemsController from "./controllers/ItemsController";
 // Cria o "roteador"
 const routes = express.Router();
 
-// Lista os items cadastrados
+// Rotas de items de coleta
 routes.get("/items", ItemsController.index);
 
-// Cria um novo Ponto de coleta
+//Rotas de Pontos de coleta
 routes.post("/points", PointsController.create);
+routes.get("/points/:id", PointsController.show);
 
 export default routes;
