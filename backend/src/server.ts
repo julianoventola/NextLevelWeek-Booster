@@ -1,12 +1,13 @@
 import express from "express";
+import routes from "./routes";
 
 // Cria um servidor com express
 const app = express();
 
-// Cria uma resposta para rota "/"
-app.get("/", (request, response) => {
-  return response.json({ message: "Hello world!" });
-});
+// Coloca interpretador de JSON para as requisições
+app.use(express.json());
+
+app.use(routes);
 
 // Mantem o servidor escutando na porta 3333
 app.listen(3333, () => console.log(`Server running on port 3333`));
