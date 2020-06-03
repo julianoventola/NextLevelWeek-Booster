@@ -1,9 +1,13 @@
 import express from "express";
+import cors from "cors";
 import path from "path";
 import routes from "./routes";
 
 // Cria um servidor com express
 const app = express();
+
+// Permite o acesso do backend de diferentes dominios
+app.use(cors());
 
 // Coloca interpretador de JSON para as requisições
 app.use(express.json());
