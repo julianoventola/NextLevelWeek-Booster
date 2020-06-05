@@ -1,12 +1,82 @@
-import React from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
+import axios from "axios";
 import { FiArrowLeft } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logo.svg";
 import { Map, TileLayer, Marker } from "react-leaflet";
+import api from "../../services/api";
 
 import "./styles.css";
 
+interface Item {
+  id: number;
+  title: string;
+  image_url: string;
+}
+
+interface IBGEUFResponse {
+  //id: number;
+  sigla: string;
+  //nome: string;
+}
+
+interface IBGECityResponse {
+  //id: number;
+  nome: string;
+  //nome: string;
+}
+
 const CreatePoint: React.FC = () => {
+  const [items, setItems] = useState<Item[]>([]);
+  const [ufs, setUfs] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [selectedUf, setSelectedUf] = useState("0");
+  const [selectedCity, setSelectedCity] = useState("0");
+
+  // Carrega todos os items coletáveis
+  useEffect(() => {
+    api.get("items").then((response) => {
+      setItems(response.data);
+    });
+  }, []);
+
+  // Carrega Todos os estados
+  useEffect(() => {
+    axios
+      .get<IBGEUFResponse[]>(
+        "https://servicodados.ibge.gov.br/api/v1/localidades/estados"
+      )
+      .then((response) => {
+        const ufInitials = response.data.map((uf) => uf.sigla);
+        setUfs(ufInitials);
+      });
+  }, []);
+
+  // Carrega Todos as cidades por Estado(UF)
+  useEffect(() => {
+    if (selectedUf === "0") {
+      return;
+    }
+    axios
+      .get<IBGECityResponse[]>(
+        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`
+      )
+      .then((response) => {
+        const cityNames = response.data.map((city) => city.nome);
+        setCities(cityNames);
+      });
+  }, [selectedUf]);
+
+  function handleSelectedUf(event: ChangeEvent<HTMLSelectElement>) {
+    const uf = event.target.value;
+    setSelectedUf(uf);
+  }
+
+  function handleSelectedCity(event: ChangeEvent<HTMLSelectElement>) {
+    const city = event.target.value;
+    setSelectedCity(city);
+  }
+
   return (
     <div id="page-create-point">
       <header>
@@ -61,14 +131,34 @@ const CreatePoint: React.FC = () => {
           <div className="field-group">
             <div className="field">
               <label htmlFor="uf">Estado(UF)</label>
-              <select name="uf" id="uf">
+              <select
+                name="uf"
+                id="uf"
+                value={selectedUf}
+                onChange={handleSelectedUf}
+              >
                 <option value="0">Selecione uma UF</option>
+                {ufs.map((uf) => (
+                  <option key={uf} value={uf}>
+                    {uf}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="field">
               <label htmlFor="city">Cidade</label>
-              <select name="city" id="city">
+              <select
+                name="city"
+                id="city"
+                value={selectedCity}
+                onChange={handleSelectedCity}
+              >
                 <option value="0">Selecione uma cidade</option>
+                {cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -85,30 +175,12 @@ const CreatePoint: React.FC = () => {
           </legend>
 
           <ul className="items-grid">
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="oleo" />
-              <span>Óleo de cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="oleo" />
-              <span>Óleo de cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="oleo" />
-              <span>Óleo de cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="oleo" />
-              <span>Óleo de cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="oleo" />
-              <span>Óleo de cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="oleo" />
-              <span>Óleo de cozinha</span>
-            </li>
+            {items.map((item) => (
+              <li key={item.id}>
+                <img src={item.image_url} alt={item.title} />
+                <span>{item.title}</span>
+              </li>
+            ))}
           </ul>
         </fieldset>
 
