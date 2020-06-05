@@ -4,6 +4,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logo.svg";
 import { Map, TileLayer, Marker } from "react-leaflet";
+import { LeafletMouseEvent } from "leaflet";
 import api from "../../services/api";
 
 import "./styles.css";
@@ -27,20 +28,38 @@ interface IBGECityResponse {
 }
 
 const CreatePoint: React.FC = () => {
+  // ------------- Estados de componete----------------
   const [items, setItems] = useState<Item[]>([]);
   const [ufs, setUfs] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
+
   const [selectedUf, setSelectedUf] = useState("0");
   const [selectedCity, setSelectedCity] = useState("0");
+  const [selectedPosition, setSelectedPosition] = useState<[number, number]>([
+    0,
+    0,
+  ]);
+  const [initialPosition, setInitialPosition] = useState<[number, number]>([
+    -23.5504546,
+    -46.633358,
+  ]);
 
-  // Carrega todos os items coletáveis
+  // -----------------------Solicita a localização do usuário
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const { latitude, longitude } = position.coords;
+      setInitialPosition([latitude, longitude]);
+    });
+  }, []);
+
+  // -----------------------Carrega todos os items coletáveis
   useEffect(() => {
     api.get("items").then((response) => {
       setItems(response.data);
     });
   }, []);
 
-  // Carrega Todos os estados
+  // -----------------------Carrega Todos os estados
   useEffect(() => {
     axios
       .get<IBGEUFResponse[]>(
@@ -52,7 +71,7 @@ const CreatePoint: React.FC = () => {
       });
   }, []);
 
-  // Carrega Todos as cidades por Estado(UF)
+  // -----------------------Carrega Todos as cidades por Estado(UF)
   useEffect(() => {
     if (selectedUf === "0") {
       return;
@@ -67,16 +86,24 @@ const CreatePoint: React.FC = () => {
       });
   }, [selectedUf]);
 
+  // -----------------------Seleciona a UF e altera componente
   function handleSelectedUf(event: ChangeEvent<HTMLSelectElement>) {
     const uf = event.target.value;
     setSelectedUf(uf);
   }
 
+  // -----------------------Seleciona o Estado e altera componente
   function handleSelectedCity(event: ChangeEvent<HTMLSelectElement>) {
     const city = event.target.value;
     setSelectedCity(city);
   }
 
+  // -----------------------Seleciona o ponto pelo Mapa
+  function handleMapClick(event: LeafletMouseEvent) {
+    setSelectedPosition([event.latlng.lat, event.latlng.lng]);
+  }
+
+  // -------------- Componente
   return (
     <div id="page-create-point">
       <header>
@@ -120,12 +147,12 @@ const CreatePoint: React.FC = () => {
             <span>Selecione o endereço no mapa</span>
           </legend>
 
-          <Map center={[-23.6533727, -46.5346456]} zoom={15}>
+          <Map center={initialPosition} zoom={15} onClick={handleMapClick}>
             <TileLayer
               attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <Marker position={[-23.6533727, -46.5346456]} />
+            <Marker position={selectedPosition} />
           </Map>
 
           <div className="field-group">
