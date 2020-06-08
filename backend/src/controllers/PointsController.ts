@@ -47,7 +47,7 @@ class PointController {
       return response.status(400).json({ message: "Points not found." });
     }
 
-    return response.json({ points });
+    return response.json(points);
   }
 
   // Cria um ponto de coleta
