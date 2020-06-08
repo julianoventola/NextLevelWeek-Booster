@@ -13,8 +13,6 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import { SvgUri } from "react-native-svg";
 
-// import { Container } from './styles';
-
 const Points: React.FC = () => {
   const navigation = useNavigation();
 
