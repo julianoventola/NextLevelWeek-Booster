@@ -15,13 +15,18 @@ class PointController {
       return response.status(400).json({ message: "Point not found." });
     }
 
+    const serializedPoints = {
+      ...point,
+      image_url: `http://192.168.15.45:3333/uploads/${point.image}`,
+    };
+
     // Procura no BD pelos items que o ponto de coleta aceita
     const items = await knex("items")
       .join("point_items", "items.id", "=", "point_items.item_id")
       .where("point_items.point_id", id)
       .select("items.title");
 
-    return response.json({ point, items });
+    return response.json({ point: serializedPoints, items });
   }
 
   // Exibe todos os pontos de coleta filtrados
@@ -47,7 +52,14 @@ class PointController {
       return response.status(400).json({ message: "Points not found." });
     }
 
-    return response.json(points);
+    const serializedPoints = points.map((point) => {
+      return {
+        ...point,
+        image_url: `http://192.168.15.45:3333/uploads/${point.image}`,
+      };
+    });
+
+    return response.json(serializedPoints);
   }
 
   // Cria um ponto de coleta
@@ -70,8 +82,7 @@ class PointController {
 
     // Aloca as informações do ponto em uma constante
     const point = {
-      image:
-        "https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
+      image: request.file.filename,
       name,
       email,
       whatsapp,
@@ -89,9 +100,12 @@ class PointController {
     const point_id = insertedIds[0];
 
     // Cria o objeto para salvar a relação Ponto x Items
-    const pointItems = items.map((item_id: number) => {
-      return { item_id, point_id };
-    });
+    const pointItems = items
+      .split(",")
+      .map((item: string) => Number(item.trim()))
+      .map((item_id: number) => {
+        return { item_id, point_id };
+      });
 
     // Salva a relação Ponto x Item
     await trx("point_items").insert(pointItems);
