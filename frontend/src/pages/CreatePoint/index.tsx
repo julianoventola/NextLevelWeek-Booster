@@ -49,9 +49,10 @@ const CreatePoint: React.FC = () => {
     0,
   ]);
   const [initialPosition, setInitialPosition] = useState<[number, number]>([
-    -23.5504546,
-    -46.633358,
+    0,
+    0,
   ]);
+  const [selectedFile, setSelectedFile] = useState<File>();
 
   const history = useHistory();
 
@@ -141,17 +142,20 @@ const CreatePoint: React.FC = () => {
     const city = selectedCity;
     const [latitude, longitude] = selectedPosition;
     const items = selectedItems;
-    const data = {
-      name,
-      email,
-      whatsapp,
-      latitude,
-      longitude,
-      city,
-      uf,
-      number,
-      items,
-    };
+    const data = new FormData();
+
+    data.append("name", name);
+    data.append("email", email);
+    data.append("whatsapp", whatsapp);
+    data.append("latitude", String(latitude));
+    data.append("longitude", String(longitude));
+    data.append("city", city);
+    data.append("uf", uf);
+    data.append("number", String(number));
+    data.append("items", items.join(","));
+    if (selectedFile) {
+      data.append("image", selectedFile);
+    }
 
     await api.post("points", data);
 
@@ -178,7 +182,8 @@ const CreatePoint: React.FC = () => {
           <br /> ponto de coleta
         </h1>
         {/* --------------------------- DADOS------------------------- */}
-        <Dropzone />
+        <Dropzone onFileUploaded={setSelectedFile} />
+
         <fieldset>
           <legend>
             <h2>Dados</h2>
