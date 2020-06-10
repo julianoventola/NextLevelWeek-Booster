@@ -7,6 +7,8 @@ import { Map, TileLayer, Marker } from "react-leaflet";
 import { LeafletMouseEvent } from "leaflet";
 import api from "../../services/api";
 
+import Dropzone from "../../components/Dropzone";
+
 import "./styles.css";
 
 interface Item {
@@ -176,6 +178,7 @@ const CreatePoint: React.FC = () => {
           <br /> ponto de coleta
         </h1>
         {/* --------------------------- DADOS------------------------- */}
+        <Dropzone />
         <fieldset>
           <legend>
             <h2>Dados</h2>
